@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>고등수학 수업 도우미</title>
+  <!-- 수식 렌더링용 (선택) -->
+  <script>
+    // MathJax는 네트워크가 될 때만 로드합니다. (오프라인 환경에서도 앱은 작동)
+    (function(){
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      s.async = true; document.head.appendChild(s);
+      window.MathJax = {tex: {inlineMath: [['$','$'], ['\\(','\\)']]} };
+    })();
+  </script>
+  <style>
+    :root{
+      --bg:#0b1020; /* 딥 블루 */
+      --panel:#121835;
+      --soft:#1b2350;
+      --accent:#8b9cff; /* 연보라 */
+      --accent-2:#44d4c2;/* 민트 */
+      --text:#eef1ff;
+      --muted:#9aa1c4;
+      --ok:#2ecc71;
+      --warn:#f39c12;
+      --err:#e74c3c;
+      --shadow: 0 10px 30px rgba(0,0,0,.3);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Arial, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      color:var(--text); background:radial-gradient(1200px 800px at 80% -10%, #1a245e33, transparent), var(--bg);
+    }
+    header{
+      position:sticky; top:0; z-index:10;
+      display:flex; align-items:center; gap:14px; padding:14px 18px;
+      background:linear-gradient(180deg, #0b1020cc, #0b102000);
+      backdrop-filter: blur(8px);
+      border-bottom:1px solid #ffffff14;
+    }
+    header .brand{display:flex; align-items:center; gap:10px}
+    .logo{
+      width:36px; height:36px; border-radius:12px; background:linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: var(--shadow);
+    }
+    h1{font-size:20px; margin:0; letter-spacing:.3px}
+    .meta{margin-left:auto; display:flex; align-items:center; gap:8px; color:var(--muted)}
+    .meta input{background:#ffffff10; border:none; padding:8px 10px; border-radius:10px; color:var(--text)}
+    .container{display:grid; grid-template-columns: 290px 1fr; gap:18px; padding:18px;}
+    aside{
+      background:linear-gradient(180deg, var(--panel), #0f1430); border:1px solid #ffffff18; border-radius: var(--radius); padding:14px; box-shadow: var(--shadow);
+      height: calc(100dvh - 100px); position: sticky; top: 82px; overflow:auto;
+    }
+    .section-btn{display:flex; align-items:center; gap:10px; width:100%; padding:12px 12px; background:#ffffff07; border:1px solid #ffffff10; border-radius:14px; color:var(--text); cursor:pointer; transition:.15s; margin-bottom:10px}
+    .section-btn:hover{transform:translateY(-1px); background:#ffffff12}
+    .section-btn.active{outline:2px solid var(--accent); background:#ffffff15}
+    .badge{margin-left:auto; font-size:12px; color:var(--muted)}
+    main{min-height:60vh}
+    .card{
+      background: linear-gradient(180deg, var(--panel), #0f1430);
+      border:1px solid #ffffff18; border-radius: var(--radius); padding:18px; box-shadow: var(--shadow); margin-bottom:18px;
+    }
+    .grid{display:grid; gap:14px}
+    .grid-2{grid-template-columns: repeat(2, 1fr)}
+    .grid-3{grid-template-columns: repeat(3, 1fr)}
+    @media (max-width: 980px){
+      .container{grid-template-columns: 1fr}
+      aside{position:relative; height:auto}
+      .grid-2, .grid-3{grid-template-columns: 1fr}
+    }
+    h2{margin:0 0 8px 0; font-size:22px}
+    h3{margin:0 0 6px 0; font-size:18px; color:#dfe4ff}
+    p{color:var(--muted); margin:0 0 10px 0}
+    label{font-size:13px; color:#cbd2ff}
+    input, select, textarea, button{
+      background:#0e1433; border:1px solid #ffffff22; color:var(--text); border-radius:12px; padding:10px; outline:none;
+    }
+    button{cursor:pointer; font-weight:600; letter-spacing:.2px}
+    .btn{
+      background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#0b1020; border:none; box-shadow: var(--shadow);
+    }
+    .btn-ghost{background:#ffffff10}
+    .row{display:flex; gap:10px; flex-wrap: wrap; align-items:center}
+    .muted{color:var(--muted)}
+    .pill{padding:6px 10px; border-radius:999px; background:#ffffff10; border:1px solid #ffffff1e; font-size:12px}
+    .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+    .katex, mjx-container{font-size: 1.05em}
+    canvas{background:#0b1020; border:1px solid #ffffff18; border-radius:14px}
+    .table{width:100%; border-collapse: collapse}
+    .table th, .table td{border-bottom:1px solid #ffffff12; padding:8px 6px; text-align:left}
+    .table th{color:#b9c2ff; font-weight:600}
+    .footer{opacity:.7; font-size:12px; text-align:center; padding:20px}
+    .tag{font-size:11px; padding:3px 8px; border-radius:8px; background:#ffffff10; border:1px solid #ffffff18; color:#cbd2ff}
+    .hidden{display:none}
+    .hr{height:1px; background:#ffffff14; margin:10px 0}
+    .kbd{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background:#00000040; padding:2px 6px; border-radius:6px; border:1px solid #ffffff25}
+    .help{font-size:13px; color:#cfd6ff}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><div class="logo" aria-hidden="true"></div><h1>고등수학 수업 도우미</h1></div>
+    <div class="meta">
+      <span class="pill">단일 파일 · 오프라인 작동</span>
+      <label for="studentName" class="sr-only">학생 이름</label>
+      <input id="studentName" placeholder="학생 이름(기록용)"/>
+      <button class="btn" id="saveName">저장</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <aside>
+      <button class="section-btn active" data-section="dashboard">🏠 대시보드 <span class="badge">개요</span></button>
+      <button class="section-btn" data-section="warmup">⚡ 데일리 워밍업</button>
+      <button class="section-btn" data-section="quiz">🧪 퀴즈 생성기</button>
+      <button class="section-btn" data-section="grapher">📈 함수 그래퍼</button>
+      <button class="section-btn" data-section="solver">🧩 식/방정식 풀이</button>
+      <button class="section-btn" data-section="stats">📊 통계 놀이터</button>
+      <button class="section-btn" data-section="geometry">📐 기하 탐험</button>
+      <button class="section-btn" data-section="flash">🗂️ 플래시카드(SR)</button>
+      <button class="section-btn" data-section="timer">⏱️ 공부 타이머</button>
+      <button class="section-btn" data-section="notes">📣 공지 · 자료</button>
+      <button class="section-btn" data-section="export">🖨️ 인쇄/내보내기</button>
+    </aside>
+
+    <main>
+      <!-- Dashboard -->
+      <section class="card" id="dashboard">
+        <h2>수업 개요</h2>
+        <p>수업 운영을 위한 도구들을 한 곳에 모았습니다. 모든 데이터는 <b>브라우저(LocalStorage)</b>에 저장됩니다.</p>
+        <div class="grid grid-3">
+          <div class="card">
+            <h3>빠른 시작</h3>
+            <div class="row">
+              <button class="btn" data-jump="warmup">워밍업 생성</button>
+              <button class="btn" data-jump="quiz">퀴즈 만들기</button>
+              <button class="btn" data-jump="grapher">그래프 그리기</button>
+            </div>
+            <p class="help">키보드 팁: <span class="kbd">/</span> 로 섹션 검색, <span class="kbd">g</span>로 그래퍼 초점.</p>
+          </div>
+          <div class="card">
+            <h3>최근 성과</h3>
+            <table class="table" id="recentScores"><thead><tr><th>이름</th><th>주제</th><th>점수</th><th>일시</th></tr></thead><tbody></tbody></table>
+          </div>
+          <div class="card">
+            <h3>오늘의 한 문제</h3>
+            <div id="dailyProblem"></div>
+            <div class="row" style="margin-top:8px">
+              <button class="btn" id="newDaily">새 문제</button>
+              <button class="btn-ghost" id="showDaily">정답 보기</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Warmup -->
+      <section class="card hidden" id="warmup">
+        <h2>데일리 워밍업 생성기</h2>
+        <p class="muted">매일 5분 개념 점검. 난이도와 주제를 고르면 랜덤 문제가 나와요.</p>
+        <div class="grid grid-3">
+          <div class="card">
+            <h3>설정</h3>
+            <label>주제</label>
+            <select id="wuTopic">
+              <option value="linear">일차방정식</option>
+              <option value="quad">이차방정식</option>
+              <option value="system">연립방정식(2x2)</option>
+              <option value="func">함수값/합성</option>
+              <option value="trig">삼각함수 기본</option>
+              <option value="prob">확률 기초</option>
+            </select>
+            <label>난이도</label>
+            <select id="wuLevel">
+              <option value="1">★</option>
+              <option value="2">★★</option>
+              <option value="3">★★★</option>
+            </select>
+            <div class="row" style="margin-top:8px">
+              <button class="btn" id="genWarmup">문제 생성</button>
+              <button class="btn-ghost" id="revealWarmup">정답</button>
+            </div>
+          </div>
+          <div class="card" style="grid-column: span 2">
+            <h3>문제</h3>
+            <div id="wuProblem" class="help"></div>
+            <div class="hr"></div>
+            <label>풀이 입력(선택)</label>
+            <textarea id="wuWork" rows="5" placeholder="풀이 과정을 적어 보세요. 수식은 $x^2+3x+2$ 처럼 입력 가능." style="width:100%"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quiz -->
+      <section class="card hidden" id="quiz">
+        <h2>퀴즈 생성기</h2>
+        <div class="grid grid-3">
+          <div class="card">
+            <h3>설정</h3>
+            <label>주제</label>
+            <select id="qTopic" aria-label="퀴즈 주제">
+              <option value="mixed">혼합</option>
+              <option value="linear">일차방정식</option>
+              <option value="quad">이차방정식</option>
+              <option value="system">연립방정식(2x2)</option>
+              <option value="func">함수값/합성</option>
+              <option value="trig">삼각함수</option>
+              <option value="prob">확률</option>
+            </select>
+            <label>문항 수</label>
+            <input type="number" id="qCount" min="3" max="20" value="6"/>
+            <div class="row" style="margin-top:8px">
+              <button class="btn" id="makeQuiz">퀴즈 시작</button>
+              <button class="btn-ghost" id="endQuiz">종료/채점</button>
+            </div>
+          </div>
+          <div class="card" style="grid-column: span 2">
+            <h3>문항</h3>
+            <ol id="quizItems"></ol>
+            <div id="quizResult" class="help"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Grapher -->
+      <section class="card hidden" id="grapher">
+        <h2>함수 그래퍼</h2>
+        <div class="grid grid-2">
+          <div class="card">
+            <h3>설정</h3>
+            <label>함수 입력(쉼표로 여러개):</label>
+            <input id="fxInput" placeholder="예: sin(x), x^2-3x+2, e^(0.3x)"/>
+            <div class="row">
+              <label>범위 x</label>
+              <input id="xMin" type="number" value="-10" style="width:90px">
+              <span>~</span>
+              <input id="xMax" type="number" value="10" style="width:90px">
+            </div>
+            <div class="row">
+              <button class="btn" id="draw">그리기 (g)</button>
+              <button class="btn-ghost" id="resetView">초기화</button>
+            </div>
+            <p class="help">스크롤: 확대/축소 · 드래그: 팬 · 더블클릭: 원점 복귀</p>
+          </div>
+          <div class="card">
+            <canvas id="plot" width="800" height="480" aria-label="그래프 영역"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Solver -->
+      <section class="card hidden" id="solver">
+        <h2>식/방정식 풀이</h2>
+        <div class="grid grid-3">
+          <div class="card">
+            <h3>일차 방정식 ax+b=0</h3>
+            <div class="row"><input id="la" type="number" value="2" style="width:90px"><span>x +</span><input id="lb" type="number" value="-6" style="width:90px"><span>= 0</span></div>
+            <button class="btn" id="solveLinear">풀이</button>
+            <div id="linearOut" class="help"></div>
+          </div>
+          <div class="card">
+            <h3>이차 방정식 ax²+bx+c=0</h3>
+            <div class="row"><input id="qa" type="number" value="1" style="width:80px"><span>x² +</span><input id="qb" type="number" value="-3" style="width:80px"><span>x +</span><input id="qc" type="number" value="2" style="width:80px"><span>= 0</span></div>
+            <button class="btn" id="solveQuad">풀이</button>
+            <div id="quadOut" class="help"></div>
+          </div>
+          <div class="card">
+            <h3>연립방정식 (2×2)</h3>
+            <p class="muted">a₁x + b₁y = c₁, a₂x + b₂y = c₂</p>
+            <div class="grid" style="grid-template-columns: repeat(3, 1fr)">
+              <input id="a1" type="number" value="2"><input id="b1" type="number" value="1"><input id="c1" type="number" value="5">
+              <input id="a2" type="number" value="1"><input id="b2" type="number" value="-1"><input id="c2" type="number" value="1">
+            </div>
+            <button class="btn" id="solveSys">풀이</button>
+            <div id="sysOut" class="help"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Stats -->
+      <section class="card hidden" id="stats">
+        <h2>통계 놀이터</h2>
+        <div class="grid grid-2">
+          <div class="card">
+            <h3>데이터 입력</h3>
+            <textarea id="dataInput" rows="7" placeholder="쉼표 또는 공백으로 구분: 12, 15, 17, 23, ..." style="width:100%"></textarea>
+            <div class="row"><button class="btn" id="analyze">분석</button><button class="btn-ghost" id="randomData">랜덤(50)</button></div>
+            <div id="statOut" class="help"></div>
+          </div>
+          <div class="card">
+            <h3>히스토그램</h3>
+            <canvas id="hist" width="800" height="420"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Geometry -->
+      <section class="card hidden" id="geometry">
+        <h2>기하 탐험 — 삼각형 슬라이더</h2>
+        <div class="grid grid-2">
+          <div class="card">
+            <h3>삼각형 (A 기준)</h3>
+            <label>a(BC) 길이</label>
+            <input type="range" id="sideA" min="3" max="20" value="12">
+            <label>b(CA) 길이</label>
+            <input type="range" id="sideB" min="3" max="20" value="10">
+            <label>∠A (도)</label>
+            <input type="range" id="angleA" min="20" max="140" value="60">
+            <div class="row" style="margin-top:8px"><span class="tag" id="triInfo">둘레/넓이</span></div>
+          </div>
+          <div class="card">
+            <canvas id="tri" width="800" height="420"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Flashcards -->
+      <section class="card hidden" id="flash">
+        <h2>플래시카드 — Leitner 시스템</h2>
+        <div class="grid grid-2">
+          <div class="card">
+            <h3>카드 추가</h3>
+            <input id="fcQ" placeholder="질문/정의 (예: 완전제곱식 전개)"/>
+            <textarea id="fcA" rows="3" placeholder="정답/설명 (예: (a±b)^2 = a^2 ± 2ab + b^2)"></textarea>
+            <div class="row"><button class="btn" id="addCard">추가</button><button class="btn-ghost" id="clearCards">모두삭제</button></div>
+          </div>
+          <div class="card">
+            <h3>학습</h3>
+            <div id="fcView" class="help">카드를 추가하세요.</div>
+            <div class="row" style="margin-top:8px">
+              <button class="btn-ghost" id="revealCard">정답</button>
+              <button class="btn" id="markEasy">쉽다(승급)</button>
+              <button class="btn" id="markHard">어렵다(초기화)</button>
+            </div>
+            <p class="muted">Leitner: 상자1(매일), 상자2(격일), 상자3(주1)</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Timer -->
+      <section class="card hidden" id="timer">
+        <h2>공부 타이머 (Pomodoro)</h2>
+        <div class="row">
+          <label>집중(분)</label><input id="focusMin" type="number" value="25" style="width:90px">
+          <label>휴식(분)</label><input id="breakMin" type="number" value="5" style="width:90px">
+          <button class="btn" id="startPom">시작</button>
+          <button class="btn-ghost" id="stopPom">정지</button>
+          <span class="tag" id="pomState">대기</span>
+        </div>
+        <h3 id="pomTime" style="font-size:54px; margin-top:10px">25:00</h3>
+        <p class="muted">소리 없음. 탭 제목이 남은 시간으로 바뀝니다.</p>
+      </section>
+
+      <!-- Notes -->
+      <section class="card hidden" id="notes">
+        <h2>공지 · 자료</h2>
+        <div class="grid grid-2">
+          <div class="card">
+            <h3>새 공지</h3>
+            <input id="noteTitle" placeholder="제목"/>
+            <textarea id="noteBody" rows="4" placeholder="내용(링크/과제 등)"></textarea>
+            <button class="btn" id="addNote">등록</button>
+          </div>
+          <div class="card">
+            <h3>목록</h3>
+            <ul id="noteList"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Export -->
+      <section class="card hidden" id="export">
+        <h2>인쇄/내보내기</h2>
+        <p>현재 워밍업/퀴즈 문제들을 한 장으로 모아 <b>인쇄</b>하거나 PDF로 저장하세요.</p>
+        <div class="row">
+          <button class="btn" id="printPage">인쇄/PDF</button>
+          <button class="btn-ghost" id="exportJSON">데이터(JSON) 내보내기</button>
+          <input type="file" id="importJSON" accept="application/json" style="display:none">
+          <button class="btn-ghost" id="importBtn">가져오기</button>
+        </div>
+        <pre id="jsonBox" class="help" style="white-space: pre-wrap"></pre>
+      </section>
+
+      <div class="footer">© 2025 수업 도우미 · 단일 HTML 파일 | 단축키 <span class="kbd">/</span> 섹션 검색</div>
+    </main>
+  </div>
+
+  <script>
+    // ---------- 유틸 ----------
+    const $ = (q, el=document) => el.querySelector(q);
+    const $$ = (q, el=document) => [...el.querySelectorAll(q)];
+    const fmt = n => Number.isInteger(n)? n.toString() : n.toFixed(3).replace(/\.0+$/,'');
+    const nowStr = () => new Date().toLocaleString();
+
+    const store = {
+      get(k, def){ try{ return JSON.parse(localStorage.getItem(k)) ?? def }catch{ return def }},
+      set(k, v){ localStorage.setItem(k, JSON.stringify(v)) }
+    };
+
+    // ---------- 네비게이션 ----------
+    const sections = $$('.section-btn');
+    const showSection = id => {
+      $$('#main > section'); // no-op for readability
+      $$('main > section').forEach(s=> s.classList.add('hidden'));
+      $('#'+id).classList.remove('hidden');
+      sections.forEach(b=> b.classList.toggle('active', b.dataset.section===id));
+      history.replaceState(null,'', '#'+id);
+      const map = {grapher:'그래프', quiz:'퀴즈', warmup:'워밍업'};
+      if (id==='grapher') $('#fxInput')?.focus();
+    };
+    sections.forEach(btn=> btn.addEventListener('click', ()=> showSection(btn.dataset.section)));
+    $$('[data-jump]').forEach(b=> b.onclick=()=> showSection(b.dataset.jump));
+
+    // 주소 해시로 초기 섹션 결정
+    window.addEventListener('load', ()=>{
+      const id = location.hash?.slice(1) || 'dashboard';
+      showSection(id);
+    });
+
+    // ---------- 학생 이름 저장 ----------
+    const nameBox = $('#studentName');
+    nameBox.value = store.get('studentName','');
+    $('#saveName').onclick = ()=> { store.set('studentName', nameBox.value.trim()); alert('저장되었습니다.'); };
+
+    // ---------- 오늘의 한 문제 ----------
+    const rnd = (a,b)=> Math.floor(Math.random()*(b-a+1))+a;
+    function renderMath(el){ if (window.MathJax) MathJax.typesetPromise([el]); }
+
+    const gen = {
+      linear(level=1){
+        let a = rnd(1,9)*(Math.random()<.5?-1:1), b = rnd(-10,10);
+        if (a===0) a=1;
+        const x = -b/a;
+        return { t:`일차방정식 $${a}x${b<0?'':'+'}${b}=0$ 의 해를 구하시오.`, ans:`$x=${fmt(x)}$` };
+      },
+      quad(level=1){
+        // 인수분해 가능한 케이스 우선
+        const r1 = rnd(-6,6) || 1, r2 = rnd(-6,6) || -2; // 해
+        const a = rnd(1,3)*(Math.random()<.5?-1:1);
+        const b = -a*(r1+r2), c = a*r1*r2;
+        return { t:`이차방정식 $${a}x^2${b<0?'':'+'}${b}x${c<0?'':'+'}${c}=0$ 의 근을 구하시오.`, ans:`$x=${fmt(r1)},~${fmt(r2)}$` };
+      },
+      system(){
+        const x=rnd(-5,5), y=rnd(-5,5);
+        const a1=rnd(1,6), b1=rnd(1,6), a2=rnd(1,6), b2=rnd(1,6);
+        const c1=a1*x+b1*y, c2=a2*x+b2*y;
+        return { t:`연립 $\\begin{cases} ${a1}x+${b1}y=${c1} \\ ${a2}x+${b2}y=${c2} \\end{cases}$ 의 해 $(x,y)$`, ans:`$(x,y)=(${x},~${y})$` };
+      },
+      func(){
+        const a=rnd(1,4), b=rnd(-3,3), x=rnd(-3,3);
+        return { t:`$f(x)=${a}x${b<0?'':'+'}${b}$ 일 때 $f(${x})$`, ans:`$${a}\\times ${x}${b<0?'':'+'}${b}=${fmt(a*x+b)}$` };
+      },
+      trig(){
+        const k = [30,45,60][rnd(0,2)], rad=(k*Math.PI/180);
+        const which = rnd(0,2); // 0:sin 1:cos 2:tan
+        const names=['sin','cos','tan'];
+        const val = which===0? Math.sin(rad): which===1? Math.cos(rad): Math.tan(rad);
+        const target = names[which];
+        return { t:`$${target}(${k}^{\\circ})$ 의 값을 구하시오.`, ans:`$${target}(${k}^{\\circ})=${fmt(val)}$` };
+      },
+      prob(){
+        const total=rnd(4,10), good=rnd(1,total-1);
+        return { t:`상자에 구슬 ${total}개 중 좋은 것 ${good}개. 하나 뽑을 때 좋은 것일 확률은?`, ans:`$${good}/${total}=${fmt(good/total)}$` };
+      }
+    };
+
+    function newDaily(){
+      const topics=['linear','quad','system','func','trig','prob'];
+      const k = topics[rnd(0, topics.length-1)];
+      const p = gen[k]();
+      $('#dailyProblem').dataset.answer = p.ans;
+      $('#dailyProblem').innerHTML = `<div class="pill">${k}</div> ${p.t}`;
+      renderMath($('#dailyProblem'));
+    }
+    newDaily();
+    $('#newDaily').onclick = newDaily;
+    $('#showDaily').onclick = ()=>{
+      const dp = $('#dailyProblem');
+      if (dp.dataset.answer) dp.innerHTML += `<div class='help' style='margin-top:6px'>정답: ${dp.dataset.answer}</div>`;
+      renderMath(dp);
+    };
+
+    // ---------- 워밍업 ----------
+    $('#genWarmup').onclick = ()=>{
+      const t = $('#wuTopic').value, lv = +$('#wuLevel').value;
+      const p = gen[t](lv);
+      $('#wuProblem').innerHTML = p.t + `<div class='hr'></div><div class='muted'>정답은 '정답' 버튼을 누르세요.</div>`;
+      $('#wuProblem').dataset.answer = p.ans;
+      renderMath($('#wuProblem'));
+    };
+    $('#revealWarmup').onclick = ()=>{
+      const el = $('#wuProblem');
+      if (el.dataset.answer) el.innerHTML += `<div style='margin-top:8px'>정답: ${el.dataset.answer}</div>`;
+      renderMath(el);
+    };
+
+    // ---------- 퀴즈 ----------
+    let currentQuiz = [];
+    function makeOne(topic){
+      if (topic==='mixed'){
+        const keys = Object.keys(gen);
+        return gen[keys[rnd(0, keys.length-1)]]();
+      }
+      return gen[topic]();
+    }
+
+    function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=rnd(0,i); [a[i],a[j]]=[a[j],a[i]] } return a }
+
+    function startQuiz(){
+      const topic = $('#qTopic').value, n = Math.max(3, Math.min(20, +$('#qCount').value||6));
+      currentQuiz = [];
+      const list = $('#quizItems'); list.innerHTML='';
+      for (let i=0;i<n;i++){
+        const base = makeOne(topic);
+        const ansText = base.ans.replace(/\$|\s|,|~|\(|\)/g,''); // crude normalize
+        // 객관식 보기 생성: 정답 변형
+        const options = [base.ans];
+        for (let k=0;k<3;k++){
+          options.push(base.ans.replace(/([0-9]+\.?[0-9]*)/, (m)=> (parseFloat(m)+(rnd(-3,3)||1))));
+        }
+        shuffle(options);
+        const id = 'q'+i;
+        const li = document.createElement('li');
+        li.innerHTML = `<div class='card'>${base.t}<div style='margin:8px 0'></div>`+
+          options.map((op,j)=>`<label style='display:block; margin:6px 0'><input type='radio' name='${id}' value='${op}'> ${op}</label>`).join('')+
+          `</div>`;
+        list.appendChild(li);
+        currentQuiz.push({q:base.t, ans: base.ans, id});
+      }
+      renderMath($('#quiz'));
+      $('#quizResult').textContent='';
+    }
+
+    $('#makeQuiz').onclick = startQuiz;
+    $('#endQuiz').onclick = ()=>{
+      if (!currentQuiz.length) return;
+      let score=0, detail=[];
+      currentQuiz.forEach((item,i)=>{
+        const sel = document.querySelector(`input[name='${item.id}']:checked`);
+        const picked = sel? sel.value: '(무응답)';
+        const ok = picked===item.ans; if (ok) score++;
+        detail.push({no:i+1, ok, picked, ans:item.ans});
+      });
+      const msg = `정답 ${score}/${currentQuiz.length} 문항`;
+      $('#quizResult').innerHTML = `<b>${msg}</b>`+
+        `<table class='table'><thead><tr><th>#</th><th>선택</th><th>정답</th><th>결과</th></tr></thead><tbody>`+
+        detail.map(d=>`<tr><td>${d.no}</td><td>${d.picked}</td><td>${d.ans}</td><td>${d.ok? '✅':'❌'}</td></tr>`).join('')+
+        `</tbody></table>`;
+      // 기록 저장
+      const rec = store.get('scores',[]);
+      rec.unshift({name: store.get('studentName','-'), topic: $('#qTopic').value, score:`${score}/${currentQuiz.length}`, at: nowStr()});
+      store.set('scores', rec.slice(0,50));
+      loadRecent();
+      renderMath($('#quizResult'));
+    };
+
+    function loadRecent(){
+      const rec = store.get('scores',[]);
+      const tb = $('#recentScores tbody'); tb.innerHTML='';
+      rec.slice(0,8).forEach(r=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML = `<td>${r.name||'-'}</td><td>${r.topic}</td><td>${r.score}</td><td>${r.at}</td>`;
+        tb.appendChild(tr);
+      })
+    }
+    loadRecent();
+
+    // ---------- 그래퍼 ----------
+    const plot = $('#plot'); const ctx = plot.getContext('2d');
+    let view = {xmin:-10,xmax:10,ymin:-6,ymax:6};
+
+    function toPx(x,y){
+      const w=plot.width, h=plot.height;
+      const X = (x-view.xmin)/(view.xmax-view.xmin)*w;
+      const Y = h - (y-view.ymin)/(view.ymax-view.ymin)*h;
+      return [X,Y];
+    }
+    function toXY(X,Y){
+      const w=plot.width, h=plot.height;
+      const x = view.xmin + (X/w)*(view.xmax-view.xmin);
+      const y = view.ymin + ((h-Y)/h)*(view.ymax-view.ymin);
+      return [x,y];
+    }
+    function drawAxes(){
+      ctx.clearRect(0,0,plot.width,plot.height);
+      // grid
+      ctx.lineWidth=1; ctx.strokeStyle='#ffffff16';
+      const step = niceStep((view.xmax-view.xmin)/10);
+      for(let x=Math.ceil(view.xmin/step)*step; x<=view.xmax; x+=step){
+        const [X] = toPx(x,0); ctx.beginPath(); ctx.moveTo(X,0); ctx.lineTo(X,plot.height); ctx.stroke();
+      }
+      for(let y=Math.ceil(view.ymin/step)*step; y<=view.ymax; y+=step){
+        const [,Y] = toPx(0,y); ctx.beginPath(); ctx.moveTo(0,Y); ctx.lineTo(plot.width,Y); ctx.stroke();
+      }
+      // axes
+      ctx.strokeStyle='#ffffff55'; ctx.lineWidth=1.4;
+      const [X0] = toPx(0,0), [,Y0] = toPx(0,0);
+      ctx.beginPath(); ctx.moveTo(X0,0); ctx.lineTo(X0,plot.height); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,Y0); ctx.lineTo(plot.width,Y0); ctx.stroke();
+    }
+    function niceStep(range){
+      const raw = range/8; const p = Math.pow(10, Math.floor(Math.log10(raw)));
+      const m = raw/p; if (m<1.5) return 1*p; if (m<3.5) return 2*p; if (m<7.5) return 5*p; return 10*p;
+    }
+
+    function parseFx(str){
+      // 안전하지 않은 eval을 피하기 위해 제한된 수학만 허용
+      const safe = str.replace(/\^/g,'**')
+        .replace(/(sin|cos|tan|log|ln|sqrt|abs|exp)\(/g,'Math.$1('.replace('ln(','log('))
+        .replace(/e\^/g,'exp(');
+      return x=>{ try{ with(Math){ return eval(safe) } }catch{ return NaN } };
+    }
+
+    function plotFx(fx){
+      ctx.strokeStyle = '#8b9cff'; ctx.lineWidth=2; ctx.beginPath();
+      let first=true;
+      for(let i=0;i<plot.width;i++){
+        const [x] = toXY(i,0); const y = fx(x);
+        const [X,Y] = toPx(x,y);
+        if (!isFinite(Y)) { first=true; continue; }
+        if (first){ ctx.moveTo(i,Y); first=false } else ctx.lineTo(i,Y);
+      }
+      ctx.stroke();
+    }
+
+    function drawAll(){
+      drawAxes();
+      const expr = $('#fxInput').value;
+      if (!expr.trim()) return;
+      expr.split(',').map(s=>s.trim()).forEach(s=> plotFx(parseFx(s)));
+    }
+
+    $('#draw').onclick = ()=>{
+      view.xmin=+$('#xMin').value; view.xmax=+$('#xMax').value; drawAll();
+    };
+    $('#resetView').onclick = ()=>{ view={xmin:-10,xmax:10,ymin:-6,ymax:6}; $('#xMin').value=-10; $('#xMax').value=10; drawAll(); };
+
+    // 인터랙션: 팬/줌
+    let isDrag=false, last=
+      {x:0,y:0};
+    plot.addEventListener('mousedown',e=>{ isDrag=true; last={x:e.offsetX,y:e.offsetY} });
+    plot.addEventListener('mouseup',()=> isDrag=false);
+    plot.addEventListener('mouseleave',()=> isDrag=false);
+    plot.addEventListener('mousemove',e=>{
+      if(!isDrag) return;
+      const dx=e.offsetX-last.x, dy=e.offsetY-last.y; last={x:e.offsetX,y:e.offsetY};
+      const [dxv, dyv] = [-(dx/plot.width)*(view.xmax-view.xmin), (dy/plot.height)*(view.ymax-view.ymin)];
+      view.xmin+=dxv; view.xmax+=dxv; view.ymin+=dyv; view.ymax+=dyv; drawAll();
+    });
+    plot.addEventListener('wheel',e=>{
+      e.preventDefault();
+      const scale = (e.deltaY>0? 1.1: 0.9);
+      const [mx,my] = toXY(e.offsetX,e.offsetY);
+      view.xmin = mx + (view.xmin-mx)*scale;
+      view.xmax = mx + (view.xmax-mx)*scale;
+      view.ymin = my + (view.ymin-my)*scale;
+      view.ymax = my + (view.ymax-my)*scale;
+      drawAll();
+    }, {passive:false});
+    plot.addEventListener('dblclick',()=>{ view={xmin:-10,xmax:10,ymin:-6,ymax:6}; drawAll(); });
+    // 단축키
+    document.addEventListener('keydown',e=>{ if(e.key==='g'){ $('#fxInput').focus(); } });
+
+    // 초기 그리기
+    $('#fxInput').value = 'sin(x), x^2-3x+2'; drawAll();
+
+    // ---------- Solver ----------
+    $('#solveLinear').onclick = ()=>{
+      const a=+$('#la').value, b=+$('#lb').value; if(a===0){ $('#linearOut').textContent='a≠0 이어야 합니다.'; return; }
+      const x=-b/a; $('#linearOut').innerHTML = `해: $x=${fmt(x)}$ <br>과정: $${a}x${b<0?'':'+'}${b}=0 \\Rightarrow x= -${b}/${a}$`;
+      renderMath($('#linearOut'));
+    };
+    $('#solveQuad').onclick = ()=>{
+      const a=+$('#qa').value, b=+$('#qb').value, c=+$('#qc').value; if(a===0){ $('#quadOut').textContent='a≠0 이어야 합니다.'; return; }
+      const D=b*b-4*a*c; let msg=`판별식 $D=b^2-4ac=${b*b}-4\\cdot${a}\\cdot${c}=${D}$`;
+      if (D<0) msg += '<br>실근이 없습니다.'; else {
+        const r1=(-b+Math.sqrt(D))/(2*a), r2=(-b-Math.sqrt(D))/(2*a);
+        msg += `<br>해: $x=${fmt(r1)},~${fmt(r2)}$`;
+      }
+      $('#quadOut').innerHTML = msg; renderMath($('#quadOut'));
+    };
+    $('#solveSys').onclick = ()=>{
+      const a1=+$('#a1').value, b1=+$('#b1').value, c1=+$('#c1').value, a2=+$('#a2').value, b2=+$('#b2').value, c2=+$('#c2').value;
+      const det=a1*b2-a2*b1; if(det===0){ $('#sysOut').textContent='해가 하나로 정해지지 않습니다.(det=0)'; return; }
+      const x=(c1*b2-c2*b1)/det, y=(a1*c2-a2*c1)/det;
+      $('#sysOut').innerHTML = `Cramer: det=${fmt(det)}, $x=${fmt(x)},~y=${fmt(y)}$`;
+      renderMath($('#sysOut'));
+    };
+
+    // ---------- 통계 ----------
+    function parseNums(s){ return s.split(/[^-0-9.]+/).map(Number).filter(v=>!isNaN(v)); }
+    function mean(a){ return a.reduce((p,c)=>p+c,0)/a.length }
+    function median(a){ const b=[...a].sort((x,y)=>x-y); const m=Math.floor(b.length/2); return b.length%2? b[m] : (b[m-1]+b[m])/2 }
+    function mode(a){ const m=new Map(); a.forEach(v=>m.set(v,(m.get(v)||0)+1)); let best=null,c=0; m.forEach((n,k)=>{ if(n>c){c=n;best=k} }); return best }
+    function stdev(a){ const m=mean(a); return Math.sqrt(mean(a.map(v=>(v-m)**2))) }
+
+    function drawHist(values){
+      const cvs=$('#hist'), c=cvs.getContext('2d'); c.clearRect(0,0,cvs.width,cvs.height);
+      if (!values.length) return;
+      const n=10, min=Math.min(...values), max=Math.max(...values), w=(max-min)/n;
+      const bins=new Array(n).fill(0);
+      values.forEach(v=>{ let i=Math.min(n-1, Math.floor((v-min)/w)); bins[i]++ });
+      const H=Math.max(...bins);
+      // axes
+      c.strokeStyle='#ffffff55'; c.lineWidth=1.2; c.beginPath(); c.moveTo(40,10); c.lineTo(40,400); c.lineTo(780,400); c.stroke();
+      // bars
+      const bw=(780-40)/n; c.fillStyle='#8b9cffaa';
+      bins.forEach((b,i)=>{
+        const h=b/H*360; c.fillRect(40+i*bw, 400-h, bw-4, h);
+      });
+    }
+
+    $('#analyze').onclick = ()=>{
+      const arr = parseNums($('#dataInput').value);
+      if (!arr.length){ $('#statOut').textContent='데이터를 입력하세요.'; drawHist([]); return; }
+      const m=mean(arr), med=median(arr), mo=mode(arr), sd=stdev(arr);
+      $('#statOut').innerHTML = `n=${arr.length}, 평균=${fmt(m)}, 중앙값=${fmt(med)}, 최빈값=${fmt(mo)}, 표준편차=${fmt(sd)}`;
+      drawHist(arr);
+    };
+    $('#randomData').onclick = ()=>{
+      const a=[...Array(50)].map(()=> Math.round(rnd(40,100)+Math.random()*10));
+      $('#dataInput').value = a.join(', ');
+      $('#analyze').click();
+    };
+
+    // ---------- 기하: 삼각형 ----------
+    const tri = $('#tri'); const tc = tri.getContext('2d');
+    function drawTri(){
+      const a=+$('#sideA').value, b=+$('#sideB').value, A=(+$('#angleA').value)*Math.PI/180;
+      // 코사인 법칙으로 c 계산
+      const c = Math.sqrt(a*a+b*b - 2*a*b*Math.cos(A));
+      const s = 0.5*a*b*Math.sin(A);
+      $('#triInfo').textContent = `c≈${fmt(c)}, 둘레≈${fmt(a+b+c)}, 넓이≈${fmt(s)}`;
+      tc.clearRect(0,0,tri.width,tri.height);
+      // 좌표 배치
+      const scale = 18; const origin = {x:100, y:340};
+      const Ax=origin.x, Ay=origin.y;
+      const Bx=Ax + a*scale, By=Ay;
+      const Cx=Ax + b*scale*Math.cos(A), Cy=Ay - b*scale*Math.sin(A);
+      // grid
+      tc.strokeStyle='#ffffff12';
+      for(let x=0;x<tri.width;x+=40){ tc.beginPath(); tc.moveTo(x,0); tc.lineTo(x,tri.height); tc.stroke(); }
+      for(let y=0;y<tri.height;y+=40){ tc.beginPath(); tc.moveTo(0,y); tc.lineTo(tri.width,y); tc.stroke(); }
+      // triangle
+      tc.strokeStyle='#8b9cff'; tc.lineWidth=2;
+      tc.beginPath(); tc.moveTo(Ax,Ay); tc.lineTo(Bx,By); tc.lineTo(Cx,Cy); tc.closePath(); tc.stroke();
+      // vertices
+      tc.fillStyle='#44d4c2'; [ [Ax,Ay,'A'],[Bx,By,'B'],[Cx,Cy,'C'] ].forEach(([x,y,l])=>{ tc.beginPath(); tc.arc(x,y,4,0,Math.PI*2); tc.fill(); tc.fillText(l, x+6,y-6); });
+    }
+    ['sideA','sideB','angleA'].forEach(id=> $('#'+id).addEventListener('input', drawTri));
+    drawTri();
+
+    // ---------- 플래시카드 ----------
+    function loadCards(){ return store.get('cards',[]); }
+    function saveCards(a){ store.set('cards', a); }
+    function pickCard(){
+      const cards=loadCards();
+      if(!cards.length){ $('#fcView').textContent='카드를 추가하세요.'; return }
+      // 간단 Leitner: due(다음 복습 시각) 기준
+      const now=Date.now();
+      const due = cards.filter(c=> (c.due||0)<=now);
+      const pool = due.length? due : cards;
+      const c = pool[Math.floor(Math.random()*pool.length)];
+      $('#fcView').innerHTML = `<b>Q.</b> ${c.q}<div class='hr'></div><div class='muted'>정답 보기 버튼을 누르세요.</div>`;
+      $('#fcView').dataset.card = c.id;
+    }
+    function schedule(box){
+      const now=Date.now();
+      if (box===1) return now + 24*3600*1000; // 1일
+      if (box===2) return now + 48*3600*1000; // 2일
+      return now + 7*24*3600*1000; // 일주일
+    }
+    $('#addCard').onclick = ()=>{
+      const q=$('#fcQ').value.trim(), a=$('#fcA').value.trim(); if(!q||!a) return;
+      const cards=loadCards();
+      cards.push({id:crypto.randomUUID(), q, a, box:1, due: Date.now()});
+      saveCards(cards); $('#fcQ').value=''; $('#fcA').value=''; pickCard();
+    };
+    $('#clearCards').onclick = ()=>{ if(confirm('모든 카드를 삭제할까요?')){ saveCards([]); $('#fcView').textContent='모두 삭제되었습니다.'; } };
+    $('#revealCard').onclick = ()=>{
+      const id=$('#fcView').dataset.card; if(!id) return;
+      const cards=loadCards(); const c=cards.find(x=>x.id===id); if(!c) return;
+      $('#fcView').innerHTML += `<div style='margin-top:8px'><b>A.</b> ${c.a}</div>`;
+    };
+    $('#markEasy').onclick = ()=>{
+      const id=$('#fcView').dataset.card; if(!id) return;
+      const cards=loadCards(); const c=cards.find(x=>x.id===id); if(!c) return;
+      c.box = Math.min(3, (c.box||1)+1); c.due = schedule(c.box); saveCards(cards); pickCard();
+    };
+    $('#markHard').onclick = ()=>{
+      const id=$('#fcView').dataset.card; if(!id) return;
+      const cards=loadCards(); const c=cards.find(x=>x.id===id); if(!c) return;
+      c.box = 1; c.due = schedule(c.box); saveCards(cards); pickCard();
+    };
+    pickCard();
+
+    // ---------- 타이머 ----------
+    let timer=null, remain=0, mode='focus';
+    function tick(){ if(remain<=0){
+        if(mode==='focus'){ mode='break'; remain=+$('#breakMin').value*60; $('#pomState').textContent='휴식'; }
+        else { mode='focus'; remain=+$('#focusMin').value*60; $('#pomState').textContent='집중'; }
+      }
+      remain--; const m=Math.floor(remain/60), s=remain%60; $('#pomTime').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; document.title=`${$('#pomTime').textContent} · 수업 도우미`;
+    }
+    $('#startPom').onclick = ()=>{ clearInterval(timer); mode='focus'; remain=+$('#focusMin').value*60; $('#pomState').textContent='집중'; timer=setInterval(tick,1000); };
+    $('#stopPom').onclick = ()=>{ clearInterval(timer); $('#pomState').textContent='대기'; document.title='고등수학 수업 도우미'; };
+
+    // ---------- 공지 ----------
+    function loadNotes(){ return store.get('notes',[]); }
+    function saveNotes(a){ store.set('notes', a); }
+    function renderNotes(){ const ul=$('#noteList'); ul.innerHTML=''; loadNotes().forEach(n=>{
+      const li=document.createElement('li');
+      li.className='card';
+      li.innerHTML = `<b>${n.title}</b> <span class='pill'>${n.at}</span><div class='muted' style='margin-top:6px'>${n.body}</div>`+
+        `<div class='row' style='margin-top:6px'><button class='btn-ghost' data-id='${n.id}'>삭제</button></div>`;
+      ul.appendChild(li);
+    });
+      // 삭제 핸들러
+      $$(`#noteList .btn-ghost`).forEach(b=> b.onclick=()=>{ const id=b.dataset.id; const a=loadNotes().filter(x=>x.id!==id); saveNotes(a); renderNotes(); });
+    }
+    $('#addNote').onclick = ()=>{
+      const title=$('#noteTitle').value.trim(), body=$('#noteBody').value.trim(); if(!title) return;
+      const a=loadNotes(); a.unshift({id:crypto.randomUUID(), title, body, at: nowStr()}); saveNotes(a); $('#noteTitle').value=''; $('#noteBody').value=''; renderNotes();
+    };
+    renderNotes();
+
+    // ---------- 내보내기 ----------
+    $('#printPage').onclick = ()=> window.print();
+    $('#exportJSON').onclick = ()=>{
+      const data = {
+        studentName: store.get('studentName',''),
+        scores: store.get('scores',[]),
+        cards: store.get('cards',[]),
+        notes: store.get('notes',[])
+      };
+      const s = JSON.stringify(data, null, 2); $('#jsonBox').textContent = s;
+      const blob = new Blob([s], {type:'application/json'}); const url = URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=url; a.download='math-helper-export.json'; a.click(); URL.revokeObjectURL(url);
+    };
+    $('#importBtn').onclick = ()=> $('#importJSON').click();
+    $('#importJSON').addEventListener('change', async (e)=>{
+      const file=e.target.files[0]; if(!file) return; const txt=await file.text();
+      try{ const data=JSON.parse(txt); ['studentName','scores','cards','notes'].forEach(k=>{ if(data[k]) store.set(k,data[k]) }); alert('가져오기 완료'); location.reload(); }catch{ alert('가져오기 실패'); }
+    });
+
+    // ---------- 전역 단축키: 섹션 검색 ----------
+    document.addEventListener('keydown', (e)=>{
+      if (e.key==='/'){
+        e.preventDefault();
+        const q = prompt('이동할 섹션(예: 그래프, 퀴즈, 워밍업, 통계, 기하, 플래시, 타이머, 공지, 인쇄):');
+        if (!q) return;
+        const map = { '그래프':'grapher','퀴즈':'quiz','워밍업':'warmup','통계':'stats','기하':'geometry','플래시':'flash','타이머':'timer','공지':'notes','인쇄':'export' };
+        showSection(map[q]||'dashboard');
+      }
+    });
+  </script>
+</body>
+</html>
